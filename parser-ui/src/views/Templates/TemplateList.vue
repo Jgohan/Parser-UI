@@ -1,6 +1,6 @@
 <template>
   <v-row justify="center" class="mt-4">
-    <v-card class="ma-4 pa-4" width="80%">
+    <v-card class="mt-4 pa-4" width="80%">
       <v-card-title>
         <span class="headline">Templates</span>
         <v-spacer></v-spacer>
@@ -27,8 +27,6 @@
 </template>
 
 <script>
-import ParserAPI from '@/components/parser-api.js'
-
 export default {
   props: ['templates'],
   data () {
@@ -44,6 +42,7 @@ export default {
           { 
             text: 'String',
             align: 'start',
+            sortable: false,
             value: 'templateString'
           }
         ]
@@ -51,16 +50,11 @@ export default {
   },
   methods: {
     selectTemplate(template) {
-      console.log(template)
       this.$emit('templateSelect', template)
     },
   },
-  created: function () {
-    ParserAPI.getAllTemplates()
-      .then(response => 
-        this.$emit('templatesUpdate', response.data)
-      )
-      // .catch(console.log('GET templates request wasn\'t executed'))
+  created() {
+    this.$emit('templatesUpdate')    
   }
 }
 </script>

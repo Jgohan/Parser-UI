@@ -15,6 +15,20 @@ export default {
     })
   },
   getAllTemplates() {
-    return parser.get('/parser')
+    return parser.get('/template')
+  },
+  addTemplate(template) {
+    return parser.post('/template', template)
+  },
+  editTemplate(template) {
+    return parser.put('/template', template)
+  },
+  deleteTemplate(id) {
+    return parser({
+      url: '/template',
+      method: 'DELETE',
+      headers: { 'content-type': 'text/html' },
+      data: id
+    })
   }
 }

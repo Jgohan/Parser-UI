@@ -9,7 +9,8 @@
         <v-text-field
           label="Type your string for parsing"
           color="teal"
-          v-model="inputString"
+          v-model.trim="inputString"
+          :error-messages="stringError"
         >
         </v-text-field>
       </v-card-text>
@@ -20,11 +21,10 @@
           color="teal"
           dark
           class="ml-2"
-          @click="updateString"
+          @click="sendString"
         >
           Send string
         </v-btn>
-        <span class="ml-8">{{ string }}</span>
         <v-spacer></v-spacer>
         <v-tooltip top>
           <template v-slot:activator="{ on }">
@@ -39,7 +39,8 @@
           <span>
             String must follow a certain template<br>
             and contain attributes (instead of _att_)<br>
-            that are character sequence without spaces
+            that are character sequence without spaces<br>
+            and they must be surrounded by spaces
           </span>
         </v-tooltip>
       </v-card-actions>
@@ -48,27 +49,52 @@
 </template>
 
 <script>
+import { required } from 'vuelidate/lib/validators'
 import ParserAPI from '@/components/parser-api.js'
 
 export default {
-  props: ['string'],
   data () {
     return {
       inputString: ''
     }
   },
+  validations: {
+    inputString: { required }
+  },
+  computed: {
+    stringError() {
+      if (this.$v.inputString.$dirty) {
+        if (!this.$v.inputString.required) return "String can\'t be empty";
+      }
+      return "";
+    }
+  },
   methods: {
-    updateString () {
-      this.$emit('stringUpdate', this.inputString)
-      if(this.inputString) {
+    sendString () {
+      if(this.$v.inputString.$invalid) {
+        this.$v.inputString.$touch()
+        setTimeout(this.$v.inputString.$reset, 5000)
+      } else {
         ParserAPI.parseString(this.inputString)
           .then(response => {
-            console.log(response)
+            this.$notify({
+              group: "notification",
+              type: "ok",
+              title: "Success",
+              text: "String was sent to the server"
+            })
           })
-          .catch(console.log('POST parse string request wasn\'t executed'))
+          .catch(response => {
+            this.$notify({
+              group: "notification",
+              type: "error",
+              title: "Error",
+              text: response
+            })
+          })
         this.inputString = ''
+        this.$v.inputString.$reset()
       }
-      else console.log("String can\'t be empty")
     }
   }
 }

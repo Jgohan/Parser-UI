@@ -16,11 +16,27 @@
     </v-app-bar> 
     
     <v-content>
-      <v-container fluid>
-        <string-input :string="string" @stringUpdate="rewriteString"/>
-        <template-edit :selectedTemplate="selectedTemplate" v-if="selectedTemplate"/>
-        <template-list :templates="templates" @templatesUpdate="updateList" @templateSelect="selectTemplate"/>
-        <template-add/>
+      <v-container fluid class="pt-10">
+        <notifications
+          group="notification"
+          width="350"
+          closeOnClick
+          :max="1"
+          :duration="5000"
+        />
+        <string-input/>
+        <template-edit
+          v-if="selectedTemplate"
+          :selectedTemplate="selectedTemplate"
+          @templateUpdate="updateTemplate"
+          @editCardClosing="closeEditCard"
+        />
+        <template-list
+          :templates="templates"
+          @templatesUpdate="updateList"
+          @templateSelect="selectTemplate"
+        />
+        <template-add @templateAdding="updateList"/>
         <router-view/>
       </v-container>
     </v-content>
@@ -28,19 +44,18 @@
 </template>
 
 <script>
+import ParserAPI from '@/components/parser-api.js'
 import StringInput from '@/views/Strings/StringInput.vue'
 import TemplateList from '@/views/Templates/TemplateList.vue'
 import TemplateAdd from '@/views/Templates/TemplateAdd.vue'
 import TemplateEdit from '@/views/Templates/TemplateEdit.vue'
-import test from '@/views/Strings/test.vue'
 
 export default {
   components: {
     StringInput,
     TemplateList,
     TemplateAdd,
-    TemplateEdit,
-    test
+    TemplateEdit
   },
   data() {
     return {
@@ -53,10 +68,9 @@ export default {
         { id: '6', templateName: 'Name6', templateString: '_att_ is 4' },
         { id: '7', templateName: 'Name7', templateString: '_att_ is 5' },
         { id: '8', templateName: 'Name8', templateString: '_att_ is 6' },
-        { id: '9', templateName: 'Name9', templateString: '_att_ is 47' },
+        { id: '9', templateName: 'Name9', templateString: '_att_ is 46' },
         { id: '0', templateName: 'Name0', templateString: '_att_ is 47' }
       ],
-      string: '',
       selectedTemplate: null
     }
   },
@@ -64,18 +78,59 @@ export default {
     rewriteString(newString) {
       this.string = newString
     },
-    updateList(newTemplates) {
-      this.templates = newTemplates
+    updateList() {
+      ParserAPI.getAllTemplates()
+      .then(response => {
+        this.templates = response.data
+      })
+      .catch(response => {
+        this.$notify({
+          group: "notification",
+          type: "error",
+          title: "Error",
+          text: response
+        })
+      })
     },
     selectTemplate(selectedTemplate) {
       this.selectedTemplate = selectedTemplate
+    },
+    updateTemplate() {
+      this.updateList()
+      this.closeEditCard()
+    },
+    closeEditCard() {
+      this.selectedTemplate = null
     }
   }
 }
 </script>
 
 <style>
-/* #app{
-  font-family: sans-serif;
-} */
+.error {
+  padding: 10px;
+  margin: 30% 10% 0% 0%;
+
+  font-size: 16px;
+
+  color: #ffffff;
+  background: #EF5350;
+  border-left: 0px solid ;
+  border-radius: 5px;
+
+  opacity: 0.8;
+}
+.ok {
+  padding: 10px;
+  margin: 30% 10% 0% 0%;
+
+  font-size: 16px;
+
+  color: #ffffff;
+  background: #26A69A;
+  border-left: 0px solid ;
+  border-radius: 5px;
+
+  opacity: 0.8;
+}
 </style>
