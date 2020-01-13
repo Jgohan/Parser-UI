@@ -1,29 +1,38 @@
 <template>
   <v-app id="app">
+    <notifications
+      group="notification"
+      width="350"
+      closeOnClick
+      :max="1"
+      :duration="5000"
+    />
     <v-app-bar app color="teal" dark class="pl-4">
       <v-toolbar-title class="display-1 pl-2">
         Parser
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <span
-        class="title font-weight-regular"
-      >
-        Милостивый Сэр
-      </span>
-      <v-btn icon large>
-        <v-icon v-if="true">exit_to_app</v-icon>
-      </v-btn>
+      <div v-if="this.$store.getters.isAuthenticated">
+        <span
+          class="title font-weight-regular"
+        >
+          {{ this.$store.getters.getUsername }}
+        </span>
+        <v-btn
+          icon
+          large
+          @click="logout"
+        >
+          <v-icon>exit_to_app</v-icon>
+        </v-btn>
+      </div>
     </v-app-bar> 
     
     <v-content>
       <v-container fluid class="pt-10">
-        <notifications
-          group="notification"
-          width="350"
-          closeOnClick
-          :max="1"
-          :duration="5000"
-        />
+        <login/>
+        <registration/>
+        <div v-if="this.$store.getters.isAuthenticated">
         <string-input/>
         <template-edit
           v-if="selectedTemplate"
@@ -37,6 +46,7 @@
           @templateSelect="selectTemplate"
         />
         <template-add @templateAdding="updateList"/>
+        </div>
         <router-view/>
       </v-container>
     </v-content>
@@ -49,13 +59,17 @@ import StringInput from '@/views/Strings/StringInput.vue'
 import TemplateList from '@/views/Templates/TemplateList.vue'
 import TemplateAdd from '@/views/Templates/TemplateAdd.vue'
 import TemplateEdit from '@/views/Templates/TemplateEdit.vue'
+import Registration from '@/views/Auth/Registration.vue'
+import Login from '@/views/Auth/Login.vue'
 
 export default {
   components: {
     StringInput,
     TemplateList,
     TemplateAdd,
-    TemplateEdit
+    TemplateEdit,
+    Registration,
+    Login
   },
   data() {
     return {
@@ -75,11 +89,9 @@ export default {
     }
   },
   methods: {
-    rewriteString(newString) {
-      this.string = newString
-    },
     updateList() {
-      ParserAPI.getAllTemplates()
+      console.log(this.$store.state)
+      ParserAPI.getAllTemplates(this.$store.getters.getToken)
       .then(response => {
         this.templates = response.data
       })
@@ -101,7 +113,13 @@ export default {
     },
     closeEditCard() {
       this.selectedTemplate = null
+    },
+    logout() {
+      this.$store.dispatch('logout');
     }
+  },
+  created() {
+    this.$store.dispatch('logout');
   }
 }
 </script>

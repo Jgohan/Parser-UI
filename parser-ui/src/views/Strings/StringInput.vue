@@ -75,23 +75,26 @@ export default {
         this.$v.inputString.$touch()
         setTimeout(this.$v.inputString.$reset, 5000)
       } else {
-        ParserAPI.parseString(this.inputString)
-          .then(response => {
-            this.$notify({
-              group: "notification",
-              type: "ok",
-              title: "Success",
-              text: "String was sent to the server"
-            })
+        ParserAPI.parseString(
+          this.$store.getters.getToken,
+          this.inputString
+        )
+        .then(response => {
+          this.$notify({
+            group: "notification",
+            type: "ok",
+            title: "Success",
+            text: "String was sent to the server"
           })
-          .catch(response => {
-            this.$notify({
-              group: "notification",
-              type: "error",
-              title: "Error",
-              text: response
-            })
+        })
+        .catch(response => {
+          this.$notify({
+            group: "notification",
+            type: "error",
+            title: "Error",
+            text: response
           })
+        })
         this.inputString = ''
         this.$v.inputString.$reset()
       }

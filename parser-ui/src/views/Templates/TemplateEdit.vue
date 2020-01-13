@@ -124,49 +124,55 @@ export default {
           setTimeout(this.$v.inputTemplateString.$reset, 5000)
         }
       } else {
-        ParserAPI.editTemplate({
-          id: this.selectedTemplate.id,
-          templateName: this.inputTemplateName,
-          templateString: this.inputTemplateString
-        })
-          .then(response => {
-            this.$notify({
-              group: "notification",
-              type: "ok",
-              title: "Success",
-              text: "Template was edited"
-            })
-            this.$emit('templateUpdate')
-          })
-          .catch(response => {
-            this.$notify({
-              group: "notification",
-              type: "error",
-              title: "Error",
-              text: response
-            })
-          })
-      }
-    },
-    deleteTemplate() {
-      ParserAPI.deleteTemplate(this.selectedTemplate.id)
+        ParserAPI.editTemplate(
+          this.$store.getters.getToken,
+          {
+            id: this.selectedTemplate.id,
+            templateName: this.inputTemplateName,
+            templateString: this.inputTemplateString
+          }
+        )
         .then(response => {
           this.$notify({
             group: "notification",
             type: "ok",
             title: "Success",
-            text: "Template was deleted"
+            text: "Template was edited"
           })
           this.$emit('templateUpdate')
         })
         .catch(response => {
-            this.$notify({
-              group: "notification",
-              type: "error",
-              title: "Error",
-              text: response
-            })
+          this.$notify({
+            group: "notification",
+            type: "error",
+            title: "Error",
+            text: response
           })
+        })
+      }
+    },
+    deleteTemplate() {
+      ParserAPI.deleteTemplate(
+        this.$store.getters.getToken,
+        this.selectedTemplate.id
+      )
+      .then(response => {
+        this.$notify({
+          group: "notification",
+          type: "ok",
+          title: "Success",
+          text: "Template was deleted"
+        })
+        this.$emit('templateUpdate')
+      })
+      .catch(response => {
+        this.$notify({
+          group: "notification",
+          type: "error",
+          title: "Error",
+          text: response
+        })
+      })
     },
     closeCard() {
       this.$emit('editCardClosing')

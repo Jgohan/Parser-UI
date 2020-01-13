@@ -97,27 +97,30 @@ export default {
           setTimeout(this.$v.inputTemplateString.$reset, 5000)
         }
       } else {
-        ParserAPI.addTemplate({
-          templateName: this.inputTemplateName,
-          templateString: this.inputTemplateString
+        ParserAPI.addTemplate(
+          this.$store.getters.getToken,
+          {
+            templateName: this.inputTemplateName,
+            templateString: this.inputTemplateString
+          }
+        )
+        .then(response => {
+          this.$notify({
+            group: "notification",
+            type: "ok",
+            title: "Success",
+            text: "Template was added to the database"
+          })
+          this.$emit('templateAdding')
         })
-          .then(response => {
-            this.$notify({
-              group: "notification",
-              type: "ok",
-              title: "Success",
-              text: "Template was added to the database"
-            })
-            this.$emit('templateAdding')
+        .catch(response => {
+          this.$notify({
+            group: "notification",
+            type: "error",
+            title: "Error",
+            text: response
           })
-          .catch(response => {
-            this.$notify({
-              group: "notification",
-              type: "error",
-              title: "Error",
-              text: response
-            })
-          })
+        })
         this.inputTemplateName = ''
         this.inputTemplateString = ''
         this.$v.inputTemplateName.$reset()
