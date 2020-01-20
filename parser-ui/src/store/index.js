@@ -3,11 +3,15 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+const roles = {
+  user: "ghjcnj.pth",
+  admin: "ghjcnjflvby"
+}
+
 const state = {
-  token: localStorage.getItem('user-token') || '',
-  username: localStorage.getItem('user-name') || '',
-  authorities: localStorage.getItem('authorities') || '',
-  role: localStorage.getItem('user-role') || ''
+  username: sessionStorage['user-name'] || '',
+  token: sessionStorage['user-token'] || '',
+  role: sessionStorage['user-role'] || ''
  }
  
  const getters = {
@@ -15,65 +19,50 @@ const state = {
     if (
       state.username != undefined && state.username != '' 
       && state.token != undefined && state.token != ''
+      && state.role != undefined && state.role != ''
     ) {
-      return true;
+      return true
     } else {
-      return false;
+      return false
     }
   },
   isAdmin: state => {
-    if (state.role === 'admin') {
-      return true;
+    if (state.role === roles.admin) {
+      return true
     } else {
-      return false;
+      return false
     }
   },
-  getToken: state => {
-    return state.token;
-  },
   getUsername: state => {
-    return state.username;
+    return state.username
   },
-  getAuthorities: state => {
-    return state.authorities;
+  getToken: state => {
+    return state.token
   }
 }
  
  const mutations = {
   auth_login: (state, user) => {
-    localStorage.setItem('user-token', user.token);
-    localStorage.setItem('user-name', user.name);
-    localStorage.setItem('user-authorities', user.authorities);
-    state.token = user.token;
-    state.username = user.username;
-    state.authorities = user.authorities;
-    var isUser = false;
-    var isAdmin = false;
-    for (var i = 0; i < user.authorities.length; i++) {
-      if (user.authorities[i].authority === 'USER') {
-        isUser = true;
-      } else if (user.authorities[i].authority === 'ADMIN') {
-        isAdmin = true;
-      }
+    sessionStorage['user-name'] = user.username
+    state.username = sessionStorage['user-name']
+
+    sessionStorage['user-token'] = user.token
+    state.token = sessionStorage['user-token']
+
+    if (user.authorities[0].authority === 'USER') {
+      sessionStorage['user-role'] = roles.user
+    } else if (user.authorities[0].authority === 'ADMIN') {
+      sessionStorage['user-role'] = roles.admin
     }
-    if (isUser) {
-      localStorage.setItem('user-role', 'user');
-      state.role = 'user';
-    }
-    if (isAdmin) {
-      localStorage.setItem('user-role', 'admin');
-      state.role = 'admin';
-    }
+    state.role = sessionStorage['user-role']
   },
   auth_logout: () => {
-    state.token = '';
-    state.username = '';
-    state.authorities = [];
-    state.role = '';
-    localStorage.removeItem('user-token');
-    localStorage.removeItem('user-name');
-    localStorage.removeItem('user-authorities');
-    localStorage.removeItem('user-role');
+    state.username = ''
+    state.token = ''
+    state.role = ''
+    delete sessionStorage['user-name']
+    delete sessionStorage['user-token']
+    delete sessionStorage['user-role']
   }
  }
  
@@ -82,7 +71,7 @@ const state = {
     context.commit('auth_login', user)
   },
   logout: (context) => {
-    context.commit('auth_logout');
+    context.commit('auth_logout')
   }
  }
  
@@ -91,4 +80,4 @@ const state = {
   getters,
   mutations,
   actions
- });
+ })
