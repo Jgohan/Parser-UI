@@ -5,30 +5,59 @@ const parser = axios.create({
   timeout: 5000,
 });
 
+const headerPrefix = 'Bearer '
+
 export default {
-  parseString(parsedString) {
+  parseString(token, parsedString) {
     return parser({
       url: '/parser',
       method: 'POST',
-      headers: { 'content-type': 'text/html' },
+      headers: {
+        'content-type': 'text/html',
+        'Authorization': headerPrefix + token
+      },
       data: parsedString
     })
   },
-  getAllTemplates() {
-    return parser.get('/template')
+  getAllTemplates(token) {
+    return parser.get(
+      '/template',
+      {
+        headers: { 'Authorization': headerPrefix + token }
+      }
+    )
   },
-  addTemplate(template) {
-    return parser.post('/template', template)
+  addTemplate(token, template) {
+    return parser({
+      url: '/template',
+      method: 'POST',
+      headers: { 'Authorization': headerPrefix + token },
+      data: template
+    })
   },
-  editTemplate(template) {
-    return parser.put('/template', template)
+  editTemplate(token, template) {
+    return parser({
+      url: '/template',
+      method: 'PUT',
+      headers: { 'Authorization': headerPrefix + token },
+      data: template
+    })
   },
-  deleteTemplate(id) {
+  deleteTemplate(token, id) {
     return parser({
       url: '/template',
       method: 'DELETE',
-      headers: { 'content-type': 'text/html' },
+      headers: {
+        'content-type': 'text/html',
+        'Authorization': headerPrefix + token
+      },
       data: id
     })
+  },
+  signUp(user) {
+    return parser.post('/auth/sign-up', user)
+  },
+  signIn(user) {
+    return parser.post('/auth/sign-in', user)
   }
 }

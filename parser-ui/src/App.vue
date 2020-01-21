@@ -1,95 +1,155 @@
 <template>
   <v-app id="app">
-    <v-app-bar app color="teal" dark class="pl-4">
-      <v-toolbar-title class="display-1 pl-2">
+    <notifications
+      group="notification"
+      width="350"
+      closeOnClick
+      :max="1"
+      :duration="5000"
+    />
+
+    <v-app-bar app color="teal" dark class="px-3">
+      <v-toolbar-title class="display-1 pl-4">
         Parser
       </v-toolbar-title>
+
       <v-spacer></v-spacer>
-      <span
-        class="title font-weight-regular"
-      >
-        Милостивый Сэр
-      </span>
-      <v-btn icon large>
-        <v-icon v-if="true">exit_to_app</v-icon>
-      </v-btn>
+
+      <v-toolbar-items>
+        <v-row
+          v-if="this.$store.getters.isAuthenticated"
+          align="center"
+          justify="end"
+        >
+          <span
+            class="headline font-weight-regular mr-1"
+          >
+            {{ this.$store.getters.getUsername }}
+          </span>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn
+                icon
+                large
+                @click="logout"
+                v-on="on"
+              >
+                <v-icon>exit_to_app</v-icon>
+              </v-btn>
+            </template>
+            <span>
+              Exit
+            </span>
+            </v-tooltip>
+        </v-row>
+        
+        <v-dialog
+          v-else
+          width="50%"
+          @click:outside="isNotRegistration = true"
+        >
+          <template v-slot:activator="{ on }">
+            <v-btn
+              text
+              class="headline font-weight-regular text-capitalize"
+              v-on="on"
+            >
+              Sign in
+            </v-btn>
+          </template>
+          <login
+            v-if="isNotRegistration"
+            @toRegistration="isNotRegistration = false"
+          />
+          <registration
+            v-else
+            @toLogin="isNotRegistration = true"
+          />
+        </v-dialog>
+      </v-toolbar-items>
     </v-app-bar> 
     
     <v-content>
-      <v-container fluid class="pt-10">
-        <notifications
-          group="notification"
-          width="350"
-          closeOnClick
-          :max="1"
-          :duration="5000"
-        />
-        <string-input/>
-        <template-edit
-          v-if="selectedTemplate"
-          :selectedTemplate="selectedTemplate"
-          @templateUpdate="updateTemplate"
-          @editCardClosing="closeEditCard"
-        />
-        <template-list
-          :templates="templates"
-          @templatesUpdate="updateList"
-          @templateSelect="selectTemplate"
-        />
-        <template-add @templateAdding="updateList"/>
-        <router-view/>
+      <v-container fluid class="py-10">
+        <v-row justify="center">
+          <v-col cols=10>
+            <div v-if="this.$store.getters.isAuthenticated">
+              <template-add
+                v-if="this.$store.getters.isAdmin"
+                @templateAdding="updateList"
+                class="mt-4"
+              />
+              <string-input
+                v-else
+                :selectedTemplate="selectedTemplate"
+                class="mt-4"
+              />
+              <template-edit
+                v-if="selectedTemplate && this.$store.getters.isAdmin"
+                :selectedTemplate="selectedTemplate"
+                @templateUpdate="updateTemplate"
+                @editCardClosing="closeEditCard"
+                class="mt-8"
+              />
+              <template-list
+                :templates="templates"
+                @templatesUpdate="updateList"
+                @templateSelect="selectTemplate"
+                class="my-8"
+              />
+            </div>
+            <home
+              v-else
+              class="mt-4"
+            />
+          </v-col>
+        </v-row>
       </v-container>
     </v-content>
   </v-app>
 </template>
 
 <script>
+import Home from '@/components/Home.vue'
+import Login from '@/components/Auth/Login.vue'
+import Registration from '@/components/Auth/Registration.vue'
+import StringInput from '@/components/String/StringInput.vue'
+import TemplateAdd from '@/components/Template/TemplateAdding.vue'
+import TemplateEdit from '@/components/Template/TemplateEdit.vue'
+import TemplateList from '@/components/Template/TemplateList.vue'
 import ParserAPI from '@/components/parser-api.js'
-import StringInput from '@/views/Strings/StringInput.vue'
-import TemplateList from '@/views/Templates/TemplateList.vue'
-import TemplateAdd from '@/views/Templates/TemplateAdd.vue'
-import TemplateEdit from '@/views/Templates/TemplateEdit.vue'
 
 export default {
   components: {
+    Home,
+    Login,
+    Registration,
     StringInput,
-    TemplateList,
     TemplateAdd,
-    TemplateEdit
+    TemplateEdit,
+    TemplateList
   },
   data() {
     return {
-      templates: [
-        { id: '1', templateName: 'Name1', templateString: '_att_ is _att_' },
-        { id: '2', templateName: 'Name2', templateString: '_att_ exists' },
-        { id: '3', templateName: 'Name3', templateString: '_att_ is 1' },
-        { id: '4', templateName: 'Name4', templateString: '_att_ is 2' },
-        { id: '5', templateName: 'Name5', templateString: '_att_ is 3' },
-        { id: '6', templateName: 'Name6', templateString: '_att_ is 4' },
-        { id: '7', templateName: 'Name7', templateString: '_att_ is 5' },
-        { id: '8', templateName: 'Name8', templateString: '_att_ is 6' },
-        { id: '9', templateName: 'Name9', templateString: '_att_ is 46' },
-        { id: '0', templateName: 'Name0', templateString: '_att_ is 47' }
-      ],
+      isNotRegistration: true,
+      templates: [],
       selectedTemplate: null
     }
   },
   methods: {
-    rewriteString(newString) {
-      this.string = newString
-    },
     updateList() {
-      ParserAPI.getAllTemplates()
+      ParserAPI.getAllTemplates(this.$store.getters.getToken)
       .then(response => {
         this.templates = response.data
       })
-      .catch(response => {
+      .catch(error => {
         this.$notify({
           group: "notification",
           type: "error",
           title: "Error",
-          text: response
+          text: error
         })
+        this.$store.dispatch('logout')
       })
     },
     selectTemplate(selectedTemplate) {
@@ -100,6 +160,10 @@ export default {
       this.closeEditCard()
     },
     closeEditCard() {
+      this.selectedTemplate = null
+    },
+    logout() {
+      this.$store.dispatch('logout')
       this.selectedTemplate = null
     }
   }
