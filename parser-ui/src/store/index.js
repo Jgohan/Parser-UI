@@ -4,8 +4,8 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 const roles = {
-  user: "ghjcnj.pth",
-  admin: "ghjcnjflvby"
+  user: window.btoa('ghjcnj.pth'),
+  admin: window.btoa('ghjcnjflvby')
 }
 
 const state = {

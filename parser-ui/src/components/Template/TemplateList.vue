@@ -14,13 +14,13 @@
           class="pr-4"
         ></v-text-field>
       </v-card-title>
+
       <v-data-table
         :headers="headers"
         :items="templates"
         :items-per-page="5"
         :search="search"
         @click:row="selectTemplate"
-        calculate-widths
       ></v-data-table>
     </v-card>
   </v-row>
@@ -29,7 +29,7 @@
 <script>
 export default {
   props: ['templates'],
-  data () {
+  data() {
     return {
       search: '',
       headers: [

@@ -22,6 +22,15 @@
           @keyup.enter="addTemplate"
         >
         </v-text-field>
+        <attribute-input
+          v-for="(attribute, index) in attributes"
+          :key="index"
+          :index="index"
+          :isButtonPressed="isButtonPressed"
+          @attributeNameAdding="addAttributeName"
+          @attributeNameValidation="checkAttributeName"
+          @templateAdding="addTemplate"
+        />
       </v-card-text>
 
       <v-card-actions>
@@ -59,12 +68,20 @@
 <script>
 import { required, maxLength } from 'vuelidate/lib/validators'
 import ParserAPI from '@/components/parser-api.js'
+import AttributeInput from '@/components/Template/AttributeInput.vue'
 
 export default {
+  components: {
+    AttributeInput
+  },
   data() {
     return {
       inputTemplateName: '',
-      inputTemplateString: ''
+      inputTemplateString: '',
+      isButtonPressed: false,
+      attributes: [],
+      invalidAttributes: [],
+      isAttributeNameInvalid: true
     }
   },
   validations: {
@@ -97,15 +114,27 @@ export default {
       return ""
     }
   },
+  watch: {
+    inputTemplateString() {
+      var attributesNumber = this.inputTemplateString.split('_att_').length - 1
+      this.attributes = []
+      this.invalidAttributes = []
+      for (var i = 0; i < attributesNumber; i++) {
+        this.attributes.push('')
+        this.invalidAttributes.push(true)
+      }
+    }
+  },
   methods: {
     addTemplate() {
+      this.isButtonPressed = true
       const isNameInvalid = this.$v.inputTemplateName.$invalid
       const isStringInvalid = this.$v.inputTemplateString.$invalid
-      if (isNameInvalid || isStringInvalid) {
+      if (isNameInvalid || isStringInvalid || this.isAttributeNameInvalid) {
         if (isNameInvalid) {
           this.$v.inputTemplateName.$touch()
           setTimeout(this.$v.inputTemplateName.$reset, 5000)
-        } 
+        }
         if (isStringInvalid) {
           this.$v.inputTemplateString.$touch()
           setTimeout(this.$v.inputTemplateString.$reset, 5000)
@@ -141,6 +170,23 @@ export default {
         this.inputTemplateString = ''
         this.$v.inputTemplateName.$reset()
         this.$v.inputTemplateString.$reset()
+        this.isAttributeNameInvalid = true
+      }
+    },
+    addAttributeName(attributeName, index) {
+      if (attributeName) {
+        this.attributes[index] = attributeName
+      }
+      if (index === this.attributes.length - 1) {
+        this.isButtonPressed = false
+      }
+    },
+    checkAttributeName(isAttributeNameInvalid, index) {
+      this.invalidAttributes[index] = isAttributeNameInvalid
+      if (this.invalidAttributes.indexOf(true) === -1) {
+        this.isAttributeNameInvalid = false
+      } else {
+        this.isAttributeNameInvalid = true
       }
     }
   }

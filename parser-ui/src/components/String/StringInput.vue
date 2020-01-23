@@ -107,12 +107,14 @@ export default {
         })
         this.inputString = ''
         this.$v.inputString.$reset()
+        this.$emit('templateUnselecting')
       }
     }
   },
   watch: {
     selectedTemplate() {
-      this.inputString = this.selectedTemplate.templateString
+      if (this.selectedTemplate)
+        this.inputString = this.selectedTemplate.templateString
     }
   }
 }

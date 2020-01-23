@@ -9,8 +9,24 @@
     />
 
     <v-app-bar app color="teal" dark class="px-3">
-      <v-toolbar-title class="display-1 pl-4">
-        Parser
+      <v-toolbar-title
+        class="display-1 pl-4"
+        @click="isHomePage = true"
+      >
+        <v-tooltip
+          bottom
+          :disabled="!this.$store.getters.isAdmin"
+        >
+         <template v-slot:activator="{ on }">
+            <span
+              disabled
+              v-on="on"
+            >
+              Parser
+            </span>
+          </template>
+          <span>Home</span>
+        </v-tooltip>
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
@@ -23,6 +39,7 @@
         >
           <span
             class="headline font-weight-regular mr-1"
+            disabled
           >
             {{ this.$store.getters.getUsername }}
           </span>
@@ -74,29 +91,47 @@
         <v-row justify="center">
           <v-col cols=10>
             <div v-if="this.$store.getters.isAuthenticated">
-              <template-add
-                v-if="this.$store.getters.isAdmin"
-                @templateAdding="updateList"
-                class="mt-4"
-              />
-              <string-input
-                v-else
-                :selectedTemplate="selectedTemplate"
-                class="mt-4"
-              />
-              <template-edit
-                v-if="selectedTemplate && this.$store.getters.isAdmin"
-                :selectedTemplate="selectedTemplate"
-                @templateUpdate="updateTemplate"
-                @editCardClosing="closeEditCard"
-                class="mt-8"
-              />
-              <template-list
-                :templates="templates"
-                @templatesUpdate="updateList"
-                @templateSelect="selectTemplate"
-                class="my-8"
-              />
+              <div v-if="this.$store.getters.isAdmin">
+                <div v-if="isHomePage">
+                  <template-add
+                    @templateAdding="updateList"
+                    class="mt-4"
+                  />
+                  <template-list
+                    :templates="templates"
+                    @templatesUpdate="updateList"
+                    @templateSelect="selectTemplate"
+                    class="my-8"
+                  />
+                </div>
+                <div v-else>
+                  <template-edit
+                    v-if="selectedTemplate"
+                    :selectedTemplate="selectedTemplate"
+                    @templateUpdate="updateTemplate"
+                    @editCardClosing="closeEditCard"
+                    class="mt-4"
+                  />
+                  <template-attributes
+                    :template="selectedTemplate"
+                    @templatesUpdate="updateList"
+                    class="my-8"
+                  />
+                </div>
+              </div>
+              <div v-else>
+                <string-input
+                  :selectedTemplate="selectedTemplate"
+                  @templateUnselecting="unselectTemplate"
+                  class="mt-4"
+                />
+                <template-list
+                  :templates="templates"
+                  @templatesUpdate="updateList"
+                  @templateSelect="selectTemplate"
+                  class="my-8"
+                />
+              </div>
             </div>
             <home
               v-else
@@ -117,6 +152,7 @@ import StringInput from '@/components/String/StringInput.vue'
 import TemplateAdd from '@/components/Template/TemplateAdding.vue'
 import TemplateEdit from '@/components/Template/TemplateEdit.vue'
 import TemplateList from '@/components/Template/TemplateList.vue'
+import TemplateAttributes from '@/components/Template/TemplateAttributes.vue'
 import ParserAPI from '@/components/parser-api.js'
 
 export default {
@@ -127,11 +163,13 @@ export default {
     StringInput,
     TemplateAdd,
     TemplateEdit,
-    TemplateList
+    TemplateList,
+    TemplateAttributes
   },
   data() {
     return {
       isNotRegistration: true,
+      isHomePage: true,
       templates: [],
       selectedTemplate: null
     }
@@ -154,16 +192,22 @@ export default {
     },
     selectTemplate(selectedTemplate) {
       this.selectedTemplate = selectedTemplate
+      this.isHomePage = false
+    },
+    unselectTemplate() {
+      this.selectedTemplate = null
     },
     updateTemplate() {
       this.updateList()
       this.closeEditCard()
     },
     closeEditCard() {
+      this.isHomePage = true
       this.selectedTemplate = null
     },
     logout() {
       this.$store.dispatch('logout')
+      this.isHomePage = true
       this.selectedTemplate = null
     }
   }

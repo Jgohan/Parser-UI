@@ -29,6 +29,15 @@
           :error-messages="stringError"
         >
         </v-text-field>
+        <attribute-input
+          v-for="(attribute, index) in attributes"
+          :key="index"
+          :index="index"
+          :isButtonPressed="isButtonPressed"
+          @attributeNameAdding="addAttributeName"
+          @attributeNameValidation="checkAttributeName"
+          @templateAdding="updateTemplate"
+        />
       </v-card-text>
 
       <v-card-actions>
@@ -64,7 +73,9 @@
           <span>
             Template must contain<br>
             the same number of attributes (_att_)<br>
-            that must be surrounded by spaces
+            that must be surrounded by spaces.<br>
+            To edit the attributes names<br>
+            start changing the template string
           </span>
         </v-tooltip>
       </v-card-actions>
@@ -75,14 +86,22 @@
 <script>
 import { required, maxLength } from 'vuelidate/lib/validators'
 import ParserAPI from '@/components/parser-api.js'
+import AttributeInput from '@/components/Template/AttributeInput.vue'
 
 export default {
   props: ['selectedTemplate'],
+  components: {
+    AttributeInput
+  },
   data() {
     return {
       inputTemplateId: this.selectedTemplate.id || '',
       inputTemplateName: this.selectedTemplate.templateName || '',
-      inputTemplateString: this.selectedTemplate.templateString || ''
+      inputTemplateString: this.selectedTemplate.templateString || '',
+      isButtonPressed: false,
+      attributes: [],
+      invalidAttributes: [],
+      isAttributeNameInvalid: true
     }
   },
   validations: {
@@ -120,13 +139,23 @@ export default {
       this.inputTemplateId = this.selectedTemplate.id
       this.inputTemplateName = this.selectedTemplate.templateName
       this.inputTemplateString = this.selectedTemplate.templateString
+    },
+    inputTemplateString() {
+      var attributesNumber = this.inputTemplateString.split('_att_').length - 1
+      this.attributes = []
+      this.invalidAttributes = []
+      for (var i = 0; i < attributesNumber; i++) {
+        this.attributes.push('')
+        this.invalidAttributes.push(true)
+      }
     }
   },
   methods: {
-    updateTemplate () {
+    updateTemplate() {
+      this.isButtonPressed = true
       const isNameInvalid = this.$v.inputTemplateName.$invalid
       const isStringInvalid = this.$v.inputTemplateString.$invalid
-      if(isNameInvalid || isStringInvalid) {
+      if(isNameInvalid || isStringInvalid || this.isAttributeNameInvalid) {
         if(isNameInvalid) {
           this.$v.inputTemplateName.$touch()
           setTimeout(this.$v.inputTemplateName.$reset, 5000)
@@ -163,6 +192,23 @@ export default {
             text: message
           })
         })
+        this.isAttributeNameInvalid = true
+      }
+    },
+    addAttributeName(attributeName, index) {
+      if (attributeName) {
+        this.attributes[index] = attributeName
+      }
+      if (index === this.attributes.length - 1) {
+        this.isButtonPressed = false
+      }
+    },
+    checkAttributeName(isAttributeNameInvalid, index) {
+      this.invalidAttributes[index] = isAttributeNameInvalid
+      if (this.invalidAttributes.indexOf(true) === -1) {
+        this.isAttributeNameInvalid = false
+      } else {
+        this.isAttributeNameInvalid = true
       }
     },
     deleteTemplate() {
@@ -181,7 +227,7 @@ export default {
       })
       .catch(error => {
         var message = error
-          if (error.response.data.text) message = error.response.data.text
+        if (error.response.data.text) message = error.response.data.text
         this.$notify({
           group: "notification",
           type: "error",
