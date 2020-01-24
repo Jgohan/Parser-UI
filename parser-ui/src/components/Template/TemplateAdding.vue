@@ -29,6 +29,7 @@
           :isButtonPressed="isButtonPressed"
           @attributeNameAdding="addAttributeName"
           @attributeNameValidation="checkAttributeName"
+          @ButtonUp="releaseButton"
           @templateAdding="addTemplate"
         />
       </v-card-text>
@@ -78,9 +79,9 @@ export default {
     return {
       inputTemplateName: '',
       inputTemplateString: '',
-      isButtonPressed: false,
       attributes: [],
       invalidAttributes: [],
+      isButtonPressed: false,
       isAttributeNameInvalid: true
     }
   },
@@ -126,6 +127,22 @@ export default {
     }
   },
   methods: {
+    addAttributeName(attributeName, index) {
+      this.attributes[index] = attributeName
+    },
+    checkAttributeName(isAttributeNameInvalid, index) {
+      this.invalidAttributes[index] = isAttributeNameInvalid
+      if (this.invalidAttributes.indexOf(true) === -1) {
+        this.isAttributeNameInvalid = false
+      } else {
+        this.isAttributeNameInvalid = true
+      }
+    },
+    releaseButton(index) {
+      if (index === this.attributes.length - 1) {
+        this.isButtonPressed = false
+      }
+    },
     addTemplate() {
       this.isButtonPressed = true
       const isNameInvalid = this.$v.inputTemplateName.$invalid
@@ -144,7 +161,8 @@ export default {
           this.$store.getters.getToken,
           {
             templateName: this.inputTemplateName,
-            templateString: this.inputTemplateString
+            templateString: this.inputTemplateString,
+            attributesNames: this.attributes
           }
         )
         .then(response => {
@@ -170,22 +188,6 @@ export default {
         this.inputTemplateString = ''
         this.$v.inputTemplateName.$reset()
         this.$v.inputTemplateString.$reset()
-        this.isAttributeNameInvalid = true
-      }
-    },
-    addAttributeName(attributeName, index) {
-      if (attributeName) {
-        this.attributes[index] = attributeName
-      }
-      if (index === this.attributes.length - 1) {
-        this.isButtonPressed = false
-      }
-    },
-    checkAttributeName(isAttributeNameInvalid, index) {
-      this.invalidAttributes[index] = isAttributeNameInvalid
-      if (this.invalidAttributes.indexOf(true) === -1) {
-        this.isAttributeNameInvalid = false
-      } else {
         this.isAttributeNameInvalid = true
       }
     }

@@ -20,6 +20,7 @@
           color="teal"
           v-model.trim="inputTemplateName"
           :error-messages="nameError"
+          @keyup.enter="updateTemplate"
         >
         </v-text-field>
         <v-text-field
@@ -27,17 +28,25 @@
           color="teal"
           v-model.trim="inputTemplateString"
           :error-messages="stringError"
+          @keyup.enter="updateTemplate"
+          @focus="isTemplateStringModified = true"
         >
         </v-text-field>
-        <attribute-input
-          v-for="(attribute, index) in attributes"
-          :key="index"
-          :index="index"
-          :isButtonPressed="isButtonPressed"
-          @attributeNameAdding="addAttributeName"
-          @attributeNameValidation="checkAttributeName"
-          @templateAdding="updateTemplate"
-        />
+        <div
+          v-if="isTemplateStringModified"
+        >
+          <attribute-input
+            v-for="(attribute, index) in attributes"
+            :key="index"
+            :index="index"
+            :isButtonPressed="isButtonPressed"
+            :attributesNames="attributes"
+            @attributeNameAdding="addAttributeName"
+            @attributeNameValidation="checkAttributeName"
+            @ButtonUp="releaseButton"
+            @templateAdding="updateTemplate"
+          />
+        </div>
       </v-card-text>
 
       <v-card-actions>
@@ -74,8 +83,9 @@
             Template must contain<br>
             the same number of attributes (_att_)<br>
             that must be surrounded by spaces.<br>
+            <br>
             To edit the attributes names<br>
-            start changing the template string
+            touch the template string
           </span>
         </v-tooltip>
       </v-card-actions>
@@ -98,10 +108,11 @@ export default {
       inputTemplateId: this.selectedTemplate.id || '',
       inputTemplateName: this.selectedTemplate.templateName || '',
       inputTemplateString: this.selectedTemplate.templateString || '',
+      attributes: this.selectedTemplate.attributesNames || [],
+      invalidAttributes: new Array(this.selectedTemplate.attributesNames.length),
       isButtonPressed: false,
-      attributes: [],
-      invalidAttributes: [],
-      isAttributeNameInvalid: true
+      isAttributeNameInvalid: true,
+      isTemplateStringModified: false
     }
   },
   validations: {
@@ -135,22 +146,27 @@ export default {
     }
   },
   watch: {
-    selectedTemplate() {
-      this.inputTemplateId = this.selectedTemplate.id
-      this.inputTemplateName = this.selectedTemplate.templateName
-      this.inputTemplateString = this.selectedTemplate.templateString
-    },
     inputTemplateString() {
-      var attributesNumber = this.inputTemplateString.split('_att_').length - 1
-      this.attributes = []
-      this.invalidAttributes = []
-      for (var i = 0; i < attributesNumber; i++) {
-        this.attributes.push('')
-        this.invalidAttributes.push(true)
-      }
+      this.isTemplateStringModified = true
     }
   },
   methods: {
+    addAttributeName(attributeName, index) {
+      this.attributes[index] = attributeName
+    },
+    checkAttributeName(isAttributeNameInvalid, index) {
+      this.invalidAttributes[index] = isAttributeNameInvalid
+      if (this.invalidAttributes.indexOf(true) === -1) {
+        this.isAttributeNameInvalid = false
+      } else {
+        this.isAttributeNameInvalid = true
+      }
+    },
+    releaseButton(index) {
+      if (index === this.attributes.length - 1) {
+        this.isButtonPressed = false
+      }
+    },
     updateTemplate() {
       this.isButtonPressed = true
       const isNameInvalid = this.$v.inputTemplateName.$invalid
@@ -170,7 +186,8 @@ export default {
           {
             id: this.selectedTemplate.id,
             templateName: this.inputTemplateName,
-            templateString: this.inputTemplateString
+            templateString: this.inputTemplateString,
+            attributesNames: this.attributes
           }
         )
         .then(response => {
@@ -192,22 +209,6 @@ export default {
             text: message
           })
         })
-        this.isAttributeNameInvalid = true
-      }
-    },
-    addAttributeName(attributeName, index) {
-      if (attributeName) {
-        this.attributes[index] = attributeName
-      }
-      if (index === this.attributes.length - 1) {
-        this.isButtonPressed = false
-      }
-    },
-    checkAttributeName(isAttributeNameInvalid, index) {
-      this.invalidAttributes[index] = isAttributeNameInvalid
-      if (this.invalidAttributes.indexOf(true) === -1) {
-        this.isAttributeNameInvalid = false
-      } else {
         this.isAttributeNameInvalid = true
       }
     },

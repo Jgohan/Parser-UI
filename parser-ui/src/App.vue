@@ -15,7 +15,7 @@
       >
         <v-tooltip
           bottom
-          :disabled="!this.$store.getters.isAdmin"
+          :disabled="!this.$store.getters.isAdmin || this.isHomePage"
         >
          <template v-slot:activator="{ on }">
             <span

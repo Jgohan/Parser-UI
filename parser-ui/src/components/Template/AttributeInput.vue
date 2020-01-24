@@ -16,7 +16,7 @@ import { required, maxLength } from 'vuelidate/lib/validators'
 import ParserAPI from '@/components/parser-api.js'
 
 export default {
-  props: ['isButtonPressed', 'index'],
+  props: ['isButtonPressed', 'index', 'attributesNames'],
   data() {
     return {
       attributeName: ''
@@ -50,15 +50,20 @@ export default {
         if (this.$v.attributeName.$invalid) {
           this.$v.attributeName.$touch()
           setTimeout(this.$v.attributeName.$reset, 5000)
-          this.$emit('attributeNameAdding', null, this.index)
         } else {
-          this.$emit('attributeNameAdding', this.attributeName, this.index)
-          this.$emit('attributeNameValidation', this.$v.attributeName.$invalid, this.index)
           this.$v.attributeName.$reset()
         }
-      } else {
-        this.$emit('attributeNameAdding', null, this.index)
+        this.$emit('ButtonUp', this.index)
       }
+    },
+    attributeName() {
+      this.$emit('attributeNameAdding', this.attributeName, this.index)
+      this.$emit('attributeNameValidation', this.$v.attributeName.$invalid, this.index)
+    }
+  },
+  created() {
+    if(this.attributesNames) {
+      this.attributeName = this.attributesNames[this.index].name
     }
   }
 }

@@ -54,7 +54,7 @@ export default {
   
         for (var i = 0; i < this.messages[0].attributes.length; i++) {
           headers.push({
-            text: this.messages[0].attributes[i].position,
+            text: this.template.attributesNames[i].name,
             align: 'start',
             sortable: true,
             value: 'attributes[' + i + '].value'
