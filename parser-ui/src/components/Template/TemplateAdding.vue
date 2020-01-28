@@ -147,6 +147,8 @@ export default {
       this.isButtonPressed = true
       const isNameInvalid = this.$v.inputTemplateName.$invalid
       const isStringInvalid = this.$v.inputTemplateString.$invalid
+      if (this.attributes.length === 0 && this.invalidAttributes.length === 0)
+        this.isAttributeNameInvalid = false
       if (isNameInvalid || isStringInvalid || this.isAttributeNameInvalid) {
         if (isNameInvalid) {
           this.$v.inputTemplateName.$touch()
