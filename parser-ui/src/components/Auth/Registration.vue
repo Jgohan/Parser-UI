@@ -162,6 +162,7 @@ export default {
         this.$v.username.$reset()
         this.$v.password.$reset()
         this.$v.confirmedPassword.$reset()
+        this.$emit("toLogin")
       }
     },
     signIn() {

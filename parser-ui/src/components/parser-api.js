@@ -8,6 +8,12 @@ const parser = axios.create({
 const headerPrefix = 'Bearer '
 
 export default {
+  signUp(user) {
+    return parser.post('/auth/sign-up', user)
+  },
+  signIn(user) {
+    return parser.post('/auth/sign-in', user)
+  },
   parseString(token, parsedString) {
     return parser({
       url: '/parser',
@@ -18,6 +24,14 @@ export default {
       },
       data: parsedString
     })
+  },
+  getMessages(token, id) {
+    return parser.get(
+      ('/parser?templateId=' + id),
+      {
+        headers: { 'Authorization': headerPrefix + token }
+      }
+    )
   },
   getAllTemplates(token) {
     return parser.get(
@@ -54,10 +68,4 @@ export default {
       data: id
     })
   },
-  signUp(user) {
-    return parser.post('/auth/sign-up', user)
-  },
-  signIn(user) {
-    return parser.post('/auth/sign-in', user)
-  }
 }
