@@ -9,16 +9,16 @@ const roles = {
 }
 
 const state = {
-  username: sessionStorage['user-name'] || '',
   token: sessionStorage['user-token'] || '',
+  username: sessionStorage['user-name'] || '',
   role: sessionStorage['user-role'] || ''
  }
  
  const getters = {
   isAuthenticated: state => {
     if (
-      state.username != undefined && state.username != '' 
-      && state.token != undefined && state.token != ''
+      state.token != undefined && state.token != ''
+      && state.username != undefined && state.username != '' 
       && state.role != undefined && state.role != ''
     ) {
       return true
@@ -43,25 +43,25 @@ const state = {
  
  const mutations = {
   auth_login: (state, user) => {
-    sessionStorage['user-name'] = user.username
-    state.username = sessionStorage['user-name']
-
     sessionStorage['user-token'] = user.token
     state.token = sessionStorage['user-token']
 
-    if (user.authorities[0].authority === 'USER') {
+    sessionStorage['user-name'] = user.username
+    state.username = sessionStorage['user-name']
+
+    if (user.role === '[USER]') {
       sessionStorage['user-role'] = roles.user
-    } else if (user.authorities[0].authority === 'ADMIN') {
+    } else if (user.role === '[ADMIN]') {
       sessionStorage['user-role'] = roles.admin
     }
     state.role = sessionStorage['user-role']
   },
   auth_logout: () => {
-    state.username = ''
     state.token = ''
+    state.username = ''
     state.role = ''
-    delete sessionStorage['user-name']
     delete sessionStorage['user-token']
+    delete sessionStorage['user-name']
     delete sessionStorage['user-role']
   }
  }

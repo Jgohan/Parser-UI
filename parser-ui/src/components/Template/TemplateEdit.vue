@@ -203,7 +203,7 @@ export default {
         })
         .catch(error => {
           var message = error
-          if (error.response.data.text) message = error.response.data.text
+          if (error.response.data) message = error.response.data
           this.$notify({
             group: "notification",
             type: "error",
@@ -230,7 +230,7 @@ export default {
       })
       .catch(error => {
         var message = error
-        if (error.response.data.text) message = error.response.data.text
+        if (error.response.data) message = error.response.data
         this.$notify({
           group: "notification",
           type: "error",

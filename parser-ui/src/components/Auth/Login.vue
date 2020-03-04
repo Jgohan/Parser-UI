@@ -98,18 +98,21 @@ export default {
         }
         ParserAPI.signIn(newUser)
         .then(response => {
+          var payload = JSON.parse(
+            window.atob(response.data.split('.')[1])
+          )
           this.$store.dispatch(
             'login',
             {
-              'username': response.data.username,
-              'token': response.data.token,
-              'authorities': response.data.authorities
+              'token': response.data,
+              'username': payload.sub,
+              'role': payload.role
             }
           )
         })
         .catch(error => {
           var message = error
-          if (error.response.data.text) message = error.response.data.text
+          if (error.response.data) message = error.response.data
           this.$notify({
             group: "notification",
             type: "error",

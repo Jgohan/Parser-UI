@@ -152,7 +152,7 @@ import StringInput from '@/components/String/StringInput.vue'
 import TemplateAdd from '@/components/Template/TemplateAdding.vue'
 import TemplateEdit from '@/components/Template/TemplateEdit.vue'
 import TemplateList from '@/components/Template/TemplateList.vue'
-import TemplateAttributes from '@/components/Template/TemplateAttributes.vue'
+import TemplateAttributes from '@/components/String/TemplateAttributes.vue'
 import ParserAPI from '@/components/parser-api.js'
 
 export default {
